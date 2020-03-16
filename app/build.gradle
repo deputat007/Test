@@ -11,14 +11,61 @@ android {
         applicationId "com.deputat.test"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        // TODO:
+        // don't forget to increment version code
+        versionCode 2
+        // TODO:
+        // 1.0.x - minor changes(hotfix) 1.0.1
+        // 1.x.0 - new functionality/design(screen) implemented etc. 1.1.0
+        // x.0.0 - new module, project redesign, a lot of new features etc. 2.0.0
+        versionName "1.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("${rootProject.projectDir}${RELEASE_STORE_FILE}")
+            storePassword RELEASE_STORE_PASSWORD
+            keyAlias RELEASE_KEY_ALIAS
+            keyPassword RELEASE_KEY_PASSWORD
+        }
+    }
+    // This task will generate apk files(debug and release) and will copy them to apk_files folder
+    // just run [assemble]
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            // project name
+            def project = "test"
+            def SEP = "-"
+            // build type (debug, release)
+            def buildType = variant.variantData.variantConfiguration.buildType.name
+            def version = variant.versionName
+
+            def newApkName = project + SEP + buildType + SEP + 'v' + version + ".apk"
+
+            outputFileName = new File(newApkName)
+        }
+        variant.assembleProvider.configure { assemble ->
+            assemble.doLast {
+                copy {
+                    from variant.outputs*.outputFile
+                    into "${rootProject.projectDir}/apk_files/${variant.dirName}"
+                }
+            }
+        }
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            shrinkResources true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -28,6 +75,10 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.core:core-ktx:1.2.0'
+    implementation 'com.google.android.material:material:1.1.0'
+    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
